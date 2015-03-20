@@ -19,5 +19,7 @@ typedef	enum{
 
 Status	createPoly(Poly &p,Term e[],int n);
 Status	destroyPoly(Poly &p);
-Status addPoly(Poly a, Poly b, Poly &c);
+Status	addPoly(Poly a, Poly b, Poly &c);
+Status	subPoly(Poly a, Poly b, Poly &c);
+void	polyTraverse(Poly a, void(*fun)(Term b));
 #endif
