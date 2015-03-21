@@ -2,7 +2,8 @@
 #include <malloc.h>
 #include <stddef.h>
 
-
+static double pow(double x, long n);
+static Status insertTerm(Poly &a, Term b);
 Status	createPoly(Poly &p, Term e[], int n)
 {
 	int i;
@@ -12,6 +13,7 @@ Status	createPoly(Poly &p, Term e[], int n)
 	p.elem = (Term *)malloc(n*sizeof(Term));
 	if (p.elem == NULL)
 		return OVERFLOW;
+		
 	for (i = 0; i < n; i++)
 		p.elem[i] = e[i];
 	p.length = n;
@@ -167,3 +169,138 @@ void polyTraverse(Poly a, void(*fun)(Term b))
 		fun(a.elem[i]);
 }
 
+Status mulPoly(Poly a, Poly b, Poly &c)
+{
+	int i, j;
+	Term tmp;
+	if (a.elem == NULL || b.elem == NULL)
+		return ERROR;
+
+	c.elem = (Term*)malloc((a.length*b.length)*sizeof(Term));
+	
+	if (c.elem == NULL)
+		return OVERFLOW;
+	c.length = 0;
+
+	for (i = 0; i < b.length; i++)
+	{
+		for (j = 0; j < a.length; j++)
+		{
+			tmp.coef = a.elem[j].coef * b.elem[i].coef;
+			tmp.expn = a.elem[j].expn + b.elem[i].expn;
+			insertTerm(c, tmp);
+		}
+	}
+	/*
+		realloc();
+		指针名=（数据类型*）realloc（要改变内存大小的指针名，新的大小）。
+		新的大小可大可小（但是要注意，如果新的大小小于原内存大小，可能会导致数据丢失，慎用！）*/
+	if (c.length != a.length + b.length)
+	{
+		c.elem = (Term*)realloc(c.elem, c.length*sizeof(Term));
+		if (c.elem == NULL)
+			return OVERFLOW;
+	}
+	return OK;
+}
+
+
+
+static Status insertTerm(Poly &a, Term b)
+{
+	int i,j;
+	if (a.elem == NULL)
+		return ERROR;
+	if (b.coef == 0)
+		return OK;
+	if (a.length == 0)
+	{
+		a.elem[a.length++] = b;
+		return OK;
+	}
+		
+	for (i = 0; i < a.length; i++)
+	{
+		if (a.elem[i].expn < b.expn )
+		{
+			if (i != a.length - 1 && a.elem[i + 1].expn>b.expn)
+			{
+				for (j = a.length-1; j >i ; j--)
+				{
+					a.elem[j + 1] = a.elem[j];
+				}
+				a.elem[i + 1] = b;
+				a.length++;
+				return OK;
+			}
+			if (i == a.length - 1)
+			{
+				a.elem[i + 1] = b;
+				a.length++;
+				return OK;
+			}		
+			
+		}
+		if (a.elem[i].expn == b.expn)
+		{
+			a.elem[i].coef += b.coef;
+			if (a.elem[i].coef == 0)
+			{
+				for (j = i; j < a.length-1; j++)
+				{
+					a.elem[j] = a.elem[j + 1];
+				}
+				a.length--;
+			}
+			return OK;
+		}
+		if (a.elem[i].expn > b.expn)
+		{
+			for (j = a.length - 1; j >=i; j--)
+			{
+				a.elem[j + 1] = a.elem[j];
+			}
+			a.elem[i] = b;
+			a.length++;
+			return OK;
+		}	
+	}
+	return OK;
+}
+
+Status evaluatePoly(Poly a, float x,float &r)
+{
+	int i;
+	if (a.elem == NULL)
+		return ERROR;
+	for (i = 0,r =0.0; i < a.length; i++)
+	{
+		r += a.elem[i].coef*pow(x,a.elem[i].expn);
+	}
+	return OK;
+}
+
+static double pow(double x, long n)
+{
+	double result = 1;
+	if (x == 0)
+		return 0;
+	if (n == 0)
+		return 1;
+	if (n > 0)
+	{
+		while (n--)
+		{
+			result *= x;
+		}
+	}
+	else
+	{
+		n = -n;
+		while (n--)
+		{
+			result /= x;
+		}
+	}
+	return result;
+}

@@ -22,4 +22,6 @@ Status	destroyPoly(Poly &p);
 Status	addPoly(Poly a, Poly b, Poly &c);
 Status	subPoly(Poly a, Poly b, Poly &c);
 void	polyTraverse(Poly a, void(*fun)(Term b));
+Status mulPoly(Poly a, Poly b, Poly &c);
+Status evaluatePoly(Poly a, float x, float &r);
 #endif
